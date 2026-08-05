@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netra — Documentation</title>
+<meta name="description" content="How Netra works: five read-only evidence planes, the permission-consent model, framework mappings, install and teardown, and its security posture.">
+<style>
+  :root{--bg:#05080a;--panel:#0b1216;--line:#15242a;--fg:#c9d5d2;--dim:#6d7f7c;
+        --acc:#00e5a0;--cyan:#22d3ee;--amber:#ffb454}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+  a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;
+    background:linear-gradient(90deg,rgba(0,229,160,.04) 1px,transparent 1px) 0 0/44px 44px,
+               linear-gradient(rgba(0,229,160,.04) 1px,transparent 1px) 0 0/44px 44px}
+  .layout{display:grid;grid-template-columns:220px 1fr;max-width:1080px;margin:0 auto;position:relative;z-index:1}
+  aside{border-right:1px solid var(--line);padding:26px 18px;position:sticky;top:0;height:100vh;overflow:auto}
+  aside .brand{font-weight:700;letter-spacing:2px;margin-bottom:20px}
+  aside .brand .eye{color:var(--acc)}
+  aside a{display:block;color:var(--dim);font-size:13px;padding:6px 0}
+  aside a:hover{color:var(--acc);text-decoration:none}
+  aside .grp{color:var(--acc);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin:18px 0 4px}
+  main{padding:34px 34px 80px;min-width:0}
+  h1{font-size:30px;margin:0 0 6px}
+  .sub{color:var(--dim);margin-bottom:30px}
+  h2{font-size:18px;margin:38px 0 12px;padding-top:10px;border-top:1px solid var(--line);color:var(--fg)}
+  h2 .n{color:var(--acc);font-family:monospace;margin-right:8px}
+  h3{font-size:14px;color:var(--cyan);margin:22px 0 6px;letter-spacing:.5px}
+  p{color:#b7c4c1}
+  code{background:#0a1417;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:13px;color:var(--acc)}
+  pre{background:#0a1417;border:1px solid var(--line);border-radius:8px;padding:14px;overflow-x:auto;font-size:13px}
+  pre code{background:none;border:0;padding:0;color:var(--fg)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .pill{font-size:11px;border:1px solid var(--line);border-radius:12px;padding:2px 8px}
+  .ok{color:var(--acc)} .warn{color:var(--amber)} .cy{color:var(--cyan)}
+  .note{background:#0c1512;border-left:3px solid var(--acc);padding:12px 16px;border-radius:4px;margin:16px 0;color:#b7c4c1}
+  img.shot{width:100%;border:1px solid var(--line);border-radius:8px;margin:14px 0 4px;display:block}
+  .cap{color:var(--dim);font-size:12px;margin:0 0 20px}
+  @media(max-width:760px){.layout{grid-template-columns:1fr}aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand">&gt;_ <span class="eye">NETRA</span></div>
+    <a href="index.html">← Home</a>
+    <div class="grp">Overview</div>
+    <a href="#what">What it is</a>
+    <a href="#planes">Evidence planes</a>
+    <a href="#verdicts">Verdicts &amp; honesty</a>
+    <div class="grp">Operate</div>
+    <a href="#install">Install</a>
+    <a href="#permissions">Permissions &amp; consent</a>
+    <a href="#identity">Managed identity</a>
+    <a href="#teardown">Teardown</a>
+    <div class="grp">Reference</div>
+    <a href="#frameworks">Frameworks</a>
+    <a href="#security">Security posture</a>
+  </aside>
+
+  <main>
+    <h1>Netra documentation</h1>
+    <div class="sub">A read-only Azure ISM PROTECTED posture reporter &amp; best-practice hardening scanner.</div>
+
+    <h2 id="what"><span class="n">01</span>What it is</h2>
+    <p>Netra deploys into your own Azure tenant and reads it — with nothing but the Reader role and, once you consent, a read-only Microsoft Graph permission. It reports where you stand against the Australian Government ISM at PROTECTED, and recommends best-practice hardening mapped to CIS, NIST 800-53, the Microsoft Cloud Security Benchmark and the ACSC Blueprint. It writes nothing to your tenant.</p>
+    <img class="shot" src="img/recommendations.png" alt="Netra hardening recommendations">
+    <p class="cap">Live best-practice recommendations from a real tenant — each mapped to the frameworks it satisfies.</p>
+
+    <h2 id="planes"><span class="n">02</span>Five evidence planes</h2>
+    <table>
+      <thead><tr><th>Plane</th><th>Reads</th><th>Needs</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><b>Infrastructure</b></td><td>Azure Resource Graph — encryption, TLS, NSGs, backup, patch assessment</td><td>Reader</td><td><span class="pill ok">live</span></td></tr>
+        <tr><td><b>Email</b></td><td>Public DNS — SPF, DKIM, DMARC, MTA-STS</td><td>nothing (public)</td><td><span class="pill ok">live</span></td></tr>
+        <tr><td><b>Identity</b></td><td>Entra — MFA, Conditional Access, security defaults</td><td><code>Policy.Read.All</code> (read-only)</td><td><span class="pill warn">consent</span></td></tr>
+        <tr><td><b>Guest</b></td><td>VM hardening — Machine Config &amp; Azure Run Command (ASR, Print Spooler, LDAP signing)</td><td><code>runCommand/action</code></td><td><span class="pill cy">opt-in</span></td></tr>
+        <tr><td><b>Directory</b></td><td>AD account hardening over read-only LDAP (reversible encryption, Kerberos pre-auth, unconstrained delegation)</td><td>DC route + read credential</td><td><span class="pill cy">opt-in</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="verdicts"><span class="n">03</span>Verdicts &amp; honesty</h2>
+    <p>Absence is never a pass. A control with no evidence is <b>Not assessed</b>; a check whose prerequisite is missing is <b>No visibility</b>; neither is Effective. Every technical mapping is <b>partial</b> — it proves a necessary condition, not the whole control — and states its limitations. Manual attestation covers the residual but can <b>never</b> override a determined machine finding: a person cannot sign away a real result.</p>
+    <div class="note">Coverage is deliberately honest: roughly a fifth of PROTECTED controls are technically checkable at all; the rest are governance, personnel and process, answered by attestation. Netra never inflates its own coverage.</div>
+
+    <h2 id="install"><span class="n">04</span>Install</h2>
+    <p>From Azure Cloud Shell (Bash), in the target subscription:</p>
+    <pre><code>curl -sL https://netra.run/install.sh | bash -s -- --region australiaeast</code></pre>
+    <p>This creates a resource group <code>rg-netra</code> with a user-assigned managed identity, Log Analytics, and a single-replica Container App; registers an Entra app for sign-in; and grants the identity <b>Reader</b> on the subscription. Infrastructure, email and hardening checks work immediately.</p>
+
+    <h2 id="permissions"><span class="n">05</span>Permissions &amp; consent</h2>
+    <p>When a plane needs a permission it isn't granted, Netra surfaces the ask in the console — with the reason, the controls it unlocks, and two ways to grant it:</p>
+    <h3>One-click portal consent</h3>
+    <p>A deep link straight to the admin-consent flow for Netra's app.</p>
+    <h3>Azure CLI grant</h3>
+    <pre><code>graphSpId=$(az ad sp list --filter "appId eq '00000003-0000-0000-c000-000000000000'" --query '[0].id' -o tsv)
+roleId=$(az ad sp show --id 00000003-0000-0000-c000-000000000000 \
+  --query "appRoles[?value=='Policy.Read.All'].id | [0]" -o tsv)
+az rest --method POST \
+  --uri "https://graph.microsoft.com/v1.0/servicePrincipals/$graphSpId/appRoleAssignedTo" \
+  --body "{\"principalId\":\"&lt;NETRA_MI_OBJECT_ID&gt;\",\"resourceId\":\"$graphSpId\",\"appRoleId\":\"$roleId\"}"</code></pre>
+    <p>The console pre-fills your managed identity's object id. Every permission Netra asks for is read-only.</p>
+    <img class="shot" src="img/permissions.png" alt="Netra permission consent panel">
+    <p class="cap">The ask in the console: a one-click portal consent link and a copy-paste az CLI grant, each explaining why.</p>
+
+    <h2 id="identity"><span class="n">06</span>Managed identity</h2>
+    <p>Netra reads your tenant as a user-assigned managed identity named <code>netra-mi</code>. The console shows it prominently — its object id, client id, and that it holds <b>Reader</b> and nothing else. There is no service account password and no baked secret; Azure access is via the managed identity, and the only secret is the Entra sign-in client secret, injected as a Container App secret.</p>
+    <img class="shot" src="img/identity.png" alt="Netra managed identity banner">
+    <p class="cap">The identity banner names the exact managed identity reading your tenant, and that it holds Reader — read-only.</p>
+
+    <h2 id="teardown"><span class="n">07</span>Teardown</h2>
+    <pre><code>az stack group delete --name netra -g rg-netra --action-on-unmanage deleteAll --yes
+az group delete -n rg-netra --yes
+# then remove the Reader role assignment and the Entra app (ids printed by the installer)</code></pre>
+
+    <h2 id="frameworks"><span class="n">08</span>Frameworks</h2>
+    <p>One scan, mapped to every framework a finding touches — pinned to versions:</p>
+    <table>
+      <thead><tr><th>Framework</th><th>Version</th></tr></thead>
+      <tbody>
+        <tr><td>Australian Government ISM (PROTECTED)</td><td>ASD OSCAL release</td></tr>
+        <tr><td>CIS Microsoft Azure Foundations Benchmark</td><td>v2.0.0</td></tr>
+        <tr><td>CIS Microsoft 365 Foundations Benchmark</td><td>v4.0.0</td></tr>
+        <tr><td>NIST SP 800-53</td><td>Rev. 5</td></tr>
+        <tr><td>Microsoft Cloud Security Benchmark</td><td>v1</td></tr>
+        <tr><td>ASD Blueprint for Secure Cloud</td><td>current</td></tr>
+      </tbody>
+    </table>
+    <div class="note">Framework control identifiers are curated references, not verbatim benchmark text, and should be verified against the pinned source version.</div>
+
+    <h2 id="security"><span class="n">09</span>Security posture</h2>
+    <p>Read-only by construction (Reader; Resource Graph has no mutation API). No baked secrets — managed identity for Azure. Entra OIDC sign-in, fail-closed. The higher-privilege guest and directory planes are opt-in and off by default. The install templates are public and the full source is available to security teams on request — <a href="mailto:security@netra.run">security@netra.run</a>.</p>
+  </main>
+</div>
+</body>
+</html>

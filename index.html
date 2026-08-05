@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netra — the read-only eye on your Azure ISM PROTECTED posture</title>
+<meta name="description" content="Netra makes it easy to get your Azure tenancy ISM PROTECTED compliant, and secures it pragmatically with CIS, NIST, MCSB and the ACSC Blueprint — with continuous compliance. Read-only, deploys into your own tenant.">
+<style>
+  :root{
+    --bg:#04070a; --bg2:#080d0f; --panel:#080e11; --line:#132025;
+    --fg:#c9d5d2; --dim:#6d7f7c; --acc:#00e5a0; --cyan:#22d3ee; --mag:#ff3d81; --amber:#ffb454;
+    --edge:#33454b;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(1200px 720px at 50% -12%,#0a1618 0%,var(--bg) 62%);
+       color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow-x:hidden}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+  a{color:var(--acc);text-decoration:none}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+    background:
+      linear-gradient(transparent 96%,rgba(0,229,160,.05) 100%) 0 0/100% 3px,
+      linear-gradient(90deg,rgba(0,229,160,.035) 1px,transparent 1px) 0 0/44px 44px,
+      linear-gradient(rgba(0,229,160,.035) 1px,transparent 1px) 0 0/44px 44px;
+    mix-blend-mode:screen;opacity:.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;position:relative;z-index:2}
+  header{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+  .brand{font-weight:700;letter-spacing:2px;font-size:20px}
+  .brand .eye{color:var(--acc)}
+  nav a{color:var(--dim);margin-left:20px;font-size:13px;letter-spacing:.5px}
+  nav a:hover{color:var(--acc)}
+
+  .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center;padding:34px 0 30px}
+  .hero h1{font-size:42px;line-height:1.05;margin:0 0 14px;letter-spacing:-.5px}
+  .hero h1 span{color:var(--acc)}
+  .tag{color:var(--dim);font-size:16px;max-width:38ch}
+  .cli{margin-top:24px;background:#050a0b;border:1px solid var(--line);border-radius:8px;padding:14px 16px;position:relative}
+  .cli .lbl{position:absolute;top:-9px;left:12px;background:var(--bg);padding:0 6px;font-size:10px;letter-spacing:1.5px;color:var(--dim)}
+  .cli code{color:var(--acc);font-size:14px}
+  .cli .cur{display:inline-block;width:8px;height:15px;background:var(--acc);vertical-align:-2px;margin-left:2px;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .btns{margin-top:22px}
+  .btn{display:inline-block;border:1px solid var(--acc);color:var(--acc);border-radius:6px;padding:9px 16px;font-size:13px;letter-spacing:.5px;margin-right:10px}
+  .btn.solid{background:var(--acc);color:#04120d;font-weight:600}
+
+  .value{border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#0a1310,#060a0b);padding:26px;margin:6px 0 8px}
+  .value .head{font-size:22px;line-height:1.35;margin:0 0 18px;max-width:70ch}
+  .value .head b{color:var(--acc)}
+  .value .head i{color:var(--cyan);font-style:normal}
+  .vp{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .vp .p{border-left:2px solid var(--acc);padding:2px 0 2px 14px}
+  .vp .p .k{color:var(--acc);font-size:12px;letter-spacing:1px;text-transform:uppercase}
+  .vp .p p{margin:4px 0 0;color:var(--dim);font-size:13.5px}
+
+  /* ===== cyberpunk PPI radar with phosphor fade ===== */
+  .radar-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:440px}
+  .reticle{position:absolute;inset:6% 8%;z-index:4;pointer-events:none;animation:retpulse 2.6s ease-in-out infinite}
+  .reticle span{position:absolute;width:22px;height:22px}
+  .reticle .tl{top:0;left:0;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+  .reticle .tr{top:0;right:0;border-top:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+  .reticle .bl{bottom:0;left:0;border-bottom:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+  .reticle .br{bottom:0;right:0;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+  @keyframes retpulse{0%,100%{opacity:.3}50%{opacity:.8}}
+
+  .radar{position:relative;width:100%;max-width:380px;aspect-ratio:1;border-radius:50%;overflow:hidden;
+    background:radial-gradient(circle at 50% 46%,#043a2a 0%,#031a13 46%,#010a08 100%);
+    border:1px solid rgba(0,229,160,.35);
+    box-shadow:0 0 44px rgba(0,229,160,.14),inset 0 0 70px rgba(0,229,160,.10),inset 0 0 0 6px rgba(0,229,160,.05)}
+  .radar .rings{position:absolute;inset:0;border-radius:50%;
+    background:repeating-radial-gradient(circle at 50% 50%,transparent 0 42px,rgba(0,229,160,.13) 42px 43px)}
+  .radar .cross::before,.radar .cross::after{content:"";position:absolute;background:rgba(0,229,160,.14)}
+  .radar .cross::before{left:0;right:0;top:50%;height:1px}
+  .radar .cross::after{top:0;bottom:0;left:50%;width:1px}
+  .radar .ticks{position:absolute;inset:0;border-radius:50%;
+    background:repeating-conic-gradient(from 0deg,rgba(0,229,160,.5) 0deg .5deg,transparent .5deg 6deg);
+    -webkit-mask:radial-gradient(circle,transparent 0 45%,#000 45.5% 49%,transparent 49.6%);
+            mask:radial-gradient(circle,transparent 0 45%,#000 45.5% 49%,transparent 49.6%)}
+  .radar .ticks.card{background:repeating-conic-gradient(from 0deg,rgba(0,229,160,.85) 0deg 1.4deg,transparent 1.4deg 90deg);
+    -webkit-mask:radial-gradient(circle,transparent 0 41%,#000 41.5% 49%,transparent 49.6%);
+            mask:radial-gradient(circle,transparent 0 41%,#000 41.5% 49%,transparent 49.6%)}
+  /* the phosphor sweep: bright leading edge fading into an afterglow trail */
+  .radar .sweep{position:absolute;inset:0;border-radius:50%;animation:sweep 4s linear infinite;
+    background:conic-gradient(from 0deg,
+      rgba(0,229,160,0) 0deg,rgba(0,229,160,0) 292deg,
+      rgba(0,229,160,.05) 316deg,rgba(0,229,160,.16) 340deg,
+      rgba(0,229,160,.42) 356deg,rgba(0,229,160,.85) 360deg)}
+  .radar .sweep::after{content:"";position:absolute;top:0;left:50%;width:2px;height:50%;transform:translateX(-50%);
+    background:linear-gradient(rgba(0,229,160,.95),rgba(0,229,160,0));box-shadow:0 0 8px rgba(0,229,160,.7)}
+  @keyframes sweep{to{transform:rotate(360deg)}}
+  .radar .blip{position:absolute;width:9px;height:9px;border-radius:50%;background:#d9fff2;
+    transform:translate(-50%,-50%);box-shadow:0 0 12px 3px rgba(0,229,160,.85);
+    animation:blip 4s linear infinite;opacity:.06}
+  @keyframes blip{0%{opacity:1;transform:translate(-50%,-50%) scale(1.6)}
+    9%{opacity:.95}55%{opacity:.14;transform:translate(-50%,-50%) scale(1)}100%{opacity:.05}}
+  .radar .center{position:absolute;top:50%;left:50%;width:8px;height:8px;border-radius:50%;background:var(--acc);
+    transform:translate(-50%,-50%);box-shadow:0 0 12px var(--acc);z-index:3}
+  .radar .glass{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 40% 30%,rgba(255,255,255,.05),transparent 42%)}
+  .radar .lbl{position:absolute;color:var(--dim);font:11px "SF Mono",monospace;letter-spacing:1px;z-index:3}
+
+  .hud{position:absolute;bottom:2px;left:0;right:0;text-align:center;z-index:4}
+  .hud .scanning{color:var(--acc);letter-spacing:4px;font-size:12px}
+  .hud .scanning b{animation:blink 1s steps(1) infinite}
+  .hud .read{color:var(--dim);font-size:11px;margin-top:3px;min-height:14px}
+
+  section{padding:48px 0;border-top:1px solid var(--line)}
+  h2{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin:0 0 20px}
+  h2::before{content:"// "}
+  .lead{font-size:20px;max-width:60ch;margin:0 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px}
+  .card h3{margin:0 0 8px;font-size:15px;color:var(--fg)}
+  .card p{margin:0;color:var(--dim);font-size:13.5px}
+  .card .k{color:var(--cyan);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+  ul.clean{list-style:none;padding:0;margin:16px 0 0}
+  ul.clean li{padding:8px 0;border-bottom:1px solid var(--line);color:var(--dim)}
+  ul.clean li b{color:var(--fg)}
+  .chips{margin-top:18px}
+  .chip{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin:4px 6px 4px 0;font-size:12px;color:var(--fg)}
+  .chip .v{color:var(--dim)}
+  .audit{background:linear-gradient(180deg,#0a1310,#080c0d);border:1px solid var(--acc);border-radius:10px;padding:22px}
+  .audit b{color:var(--acc)}
+  .disc{color:var(--dim);font-size:12.5px;border-top:1px solid var(--line);padding:26px 0;line-height:1.7}
+  footer{color:var(--dim);font-size:12px;padding:26px 0 50px;text-align:center}
+  @media(max-width:760px){.hero{grid-template-columns:1fr}.hero h1{font-size:32px}.radar-stage{min-height:380px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">&gt;_ <span class="eye">NETRA</span></div>
+    <nav>
+      <a href="#value">Why</a><a href="#what">What</a><a href="#how">How</a>
+      <a href="docs.html">Docs</a><a href="#install">Install</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>The read-only <span>eye</span> on your Azure ISM&nbsp;PROTECTED posture.</h1>
+      <p class="tag">Compliance the manual way is slow, consultant-heavy, and stale by the next quarterly ISM update. Netra changes that.</p>
+      <div class="cli" id="install">
+        <span class="lbl">AZURE CLOUD SHELL</span>
+        <code class="mono">curl -sL https://netra.run/install.sh | bash -s -- --region australiaeast<span class="cur"></span></code>
+      </div>
+      <div class="btns">
+        <a class="btn solid" href="docs.html">Read the docs</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+
+    <div class="radar-stage">
+      <div class="reticle"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+      <div class="radar">
+        <div class="rings"></div>
+        <div class="cross"></div>
+        <div class="ticks"></div>
+        <div class="ticks card"></div>
+        <span class="blip" style="left:71%;top:26%;animation-delay:-0.44s"></span>
+        <span class="blip" style="left:72%;top:58%;animation-delay:-1.22s"></span>
+        <span class="blip" style="left:38%;top:84%;animation-delay:-2.22s"></span>
+        <span class="blip" style="left:31%;top:43%;animation-delay:-3.22s"></span>
+        <span class="blip" style="left:35%;top:24%;animation-delay:-3.66s"></span>
+        <span class="blip" style="left:60%;top:70%;animation-delay:-1.90s"></span>
+        <div class="sweep"></div>
+        <div class="center"></div>
+        <div class="glass"></div>
+        <span class="lbl" style="top:6px;left:50%;transform:translateX(-50%)">N</span>
+        <span class="lbl" style="right:10px;top:50%;transform:translateY(-50%)">E</span>
+        <span class="lbl" style="bottom:6px;left:50%;transform:translateX(-50%)">S</span>
+        <span class="lbl" style="left:10px;top:50%;transform:translateY(-50%)">W</span>
+      </div>
+      <div class="hud">
+        <div class="scanning mono">CONTINUOUS SCAN<b>_</b></div>
+        <div class="read mono" id="readout"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="value" id="value">
+    <p class="head">Netra makes it easy to get your Azure tenancy <b>ISM PROTECTED compliant</b> — and secures it pragmatically with the standards you're assessed against, kept <i>continuously compliant</i>.</p>
+    <div class="vp">
+      <div class="p"><div class="k">Compliant, fast</div><p>ISM PROTECTED posture mapped to ASD's own controls — not a months-long consultant spreadsheet marathon.</p></div>
+      <div class="p"><div class="k">Secured pragmatically</div><p>Hardened against real standards: CIS, NIST 800-53, MCSB and the ACSC Blueprint — free from our own checks.</p></div>
+      <div class="p"><div class="k">Continuous compliance</div><p>Re-scan any time. Posture stays current as your tenant changes and the ISM updates each quarter.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section id="what">
+    <h2>What Netra sees</h2>
+    <p class="lead">One read-only pass over your tenant, mapped to the controls your assessor actually asks for — and everything it can't prove, it says so, plainly.</p>
+    <ul class="clean">
+      <li><b>Infrastructure</b> — Resource Graph, Reader only <span class="mono" style="float:right;color:var(--acc)">▮ live</span></li>
+      <li><b>Email</b> — SPF / DKIM / DMARC / MTA-STS over public DNS <span class="mono" style="float:right;color:var(--acc)">▮ live</span></li>
+      <li><b>Identity</b> — Entra MFA &amp; Conditional Access via read-only Graph <span class="mono" style="float:right;color:var(--amber)">▮ consent</span></li>
+      <li><b>Guest</b> — VM hardening via Machine Config / Run Command <span class="mono" style="float:right;color:var(--cyan)">▮ opt-in</span></li>
+      <li><b>Directory</b> — AD account hardening over read-only LDAP <span class="mono" style="float:right;color:var(--cyan)">▮ opt-in</span></li>
+    </ul>
+  </section>
+
+  <section id="how">
+    <h2>How it runs</h2>
+    <div class="cards">
+      <div class="card"><h3>In your tenant</h3><p>Deploys as a single Container App into your own subscription. Your configuration never leaves it.</p></div>
+      <div class="card"><h3>Read-only by construction</h3><p>The Reader role only. Resource Graph has no mutation API — the read-only claim is checkable in source.</p></div>
+      <div class="card"><h3>Consent, explained</h3><p>When a check needs Graph, Netra asks — a one-click portal link or an <span class="mono">az</span> grant, each spelling out why.</p></div>
+      <div class="card"><h3>Obvious identity</h3><p>The console shows exactly which managed identity reads your tenant, and that it holds Reader and nothing else.</p></div>
+    </div>
+  </section>
+
+  <section id="frameworks">
+    <h2>Mapped to what you're assessed against</h2>
+    <p class="lead">One scan, every framework a finding touches — pinned to real benchmark versions.</p>
+    <div class="chips">
+      <span class="chip">ISM <span class="v">PROTECTED (ASD OSCAL)</span></span>
+      <span class="chip">CIS Azure <span class="v">Foundations v2.0.0</span></span>
+      <span class="chip">CIS M365 <span class="v">v4.0.0</span></span>
+      <span class="chip">NIST <span class="v">SP 800-53 Rev. 5</span></span>
+      <span class="chip">MCSB <span class="v">v1</span></span>
+      <span class="chip">ACSC <span class="v">Blueprint for Secure Cloud</span></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="audit">
+      <h2 style="margin-bottom:12px">Security audits welcome</h2>
+      <p>Netra is built to be approvable in an afternoon. The install templates are public, and the full source is available to security teams on request — read the code, verify there's no write path, watch it hold nothing but Reader. Reach us at <b>security@netra.run</b>.</p>
+    </div>
+  </section>
+
+  <div class="disc">
+    <b>Disclaimer.</b> Netra is an independent assessment aid. It is not endorsed by, affiliated with, or accredited by the Australian Signals Directorate, the ACSC, or the Australian Government. It reports observed posture against the ISM and public benchmarks; it does not grant accreditation or IRAP assessment. "ISM", "Essential Eight", "ACSC" and "IRAP" are used nominatively to describe the frameworks assessed. Framework control identifiers are curated references pinned to the versions shown and should be verified against the source benchmark.
+  </div>
+
+  <footer>
+    &gt;_ NETRA · read-only Azure ISM PROTECTED posture · <a href="docs.html">docs</a> · security@netra.run
+  </footer>
+</div>
+
+<script>
+  const lines = [
+    "resources | where type == 'microsoft.storage/storageaccounts'",
+    "ism-1080 · data at rest · AACA encryption … EFFECTIVE",
+    "ism-1386 · management traffic … INEFFECTIVE",
+    "_dmarc.example.gov.au · p=reject … EFFECTIVE",
+    "conditionalAccess/policies … require Policy.Read.All",
+    "CIS Azure 3.7 · public blob access … 2 affected",
+    "userAccountControl :1.2.840.113556.1.4.803:=4194304",
+    "986 PROTECTED controls · 5 evidence planes · continuous"
+  ];
+  let i = 0; const el = document.getElementById('readout');
+  setInterval(() => { el.textContent = lines[i % lines.length]; i++; }, 1500);
+  el.textContent = lines[0];
+</script>
+</body>
+</html>
