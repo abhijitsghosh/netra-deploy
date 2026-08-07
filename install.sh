@@ -16,12 +16,18 @@ IMAGE="ghcr.io/abhijitsghosh/netra:latest"
 BASE="${NETRA_BASE:-https://raw.githubusercontent.com/abhijitsghosh/netra-deploy/main}"
 TEMPLATE=""
 
+INFRA_SUBNET=""; DB_SUBNET=""; DB_DNS_ZONE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --region) REGION="$2"; shift 2;;
     --resource-group) RG="$2"; shift 2;;
     --image) IMAGE="$2"; shift 2;;
     --template-file) TEMPLATE="$2"; shift 2;;
+    # Optional VNet integration: run Netra inside your VNet so the AD plane has
+    # line-of-sight to a domain controller, and (with --db-subnet) make Postgres private.
+    --infrastructure-subnet) INFRA_SUBNET="$2"; shift 2;;
+    --db-subnet) DB_SUBNET="$2"; shift 2;;
+    --db-dns-zone) DB_DNS_ZONE="$2"; shift 2;;
     *) echo "unknown arg: $1"; exit 1;;
   esac
 done
@@ -63,10 +69,15 @@ if [[ -z "$DB_PASSWORD" ]]; then
 fi
 [[ -z "$DB_PASSWORD" ]] && DB_PASSWORD="Nt$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 22)9!"
 
+EXTRA_PARAMS=()
+[[ -n "$INFRA_SUBNET" ]] && EXTRA_PARAMS+=(infrastructureSubnetId="$INFRA_SUBNET")
+[[ -n "$DB_SUBNET" ]]    && EXTRA_PARAMS+=(dbDelegatedSubnetId="$DB_SUBNET")
+[[ -n "$DB_DNS_ZONE" ]]  && EXTRA_PARAMS+=(dbPrivateDnsZoneId="$DB_DNS_ZONE")
+
 az stack group create --name "$STACK" --resource-group "$RG" \
   --template-file "$TEMPLATE" \
   --parameters entraTenantId="$TENANT" entraClientId="$APP_ID" entraClientSecret="$SECRET" image="$IMAGE" \
-    dbAdminPassword="$DB_PASSWORD" \
+    dbAdminPassword="$DB_PASSWORD" "${EXTRA_PARAMS[@]}" \
   --action-on-unmanage deleteAll --deny-settings-mode none --yes -o none
 
 APP_URL=$(az deployment group show -g "$RG" -n "$STACK" --query "properties.outputs.appUrl.value" -o tsv 2>/dev/null || \

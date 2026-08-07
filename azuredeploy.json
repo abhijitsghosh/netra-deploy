@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.43.8.12551",
-      "templateHash": "13619345645050255228"
+      "templateHash": "14002370357661850254"
     }
   },
   "parameters": {
@@ -74,6 +74,27 @@
       "metadata": {
         "description": "Database name."
       }
+    },
+    "infrastructureSubnetId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Container Apps infrastructure subnet id. Supply it to run Netra inside your VNet — needed to give the Active Directory plane line-of-sight to a domain controller, and to reach a private database."
+      }
+    },
+    "dbDelegatedSubnetId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Delegated subnet id for a PRIVATE Postgres (VNet-injected). When set, the database has no public endpoint and no firewall rule; it is reachable only from the VNet."
+      }
+    },
+    "dbPrivateDnsZoneId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Private DNS zone (privatelink.postgres.database.azure.com) ARM id, required with dbDelegatedSubnetId."
+      }
     }
   },
   "resources": [
@@ -86,6 +107,7 @@
       ]
     },
     {
+      "condition": "[empty(parameters('dbDelegatedSubnetId'))]",
       "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
       "apiVersion": "2024-08-01",
       "name": "[format('{0}/{1}', format('{0}-db', parameters('namePrefix')), 'AllowAzureServices')]",
@@ -125,7 +147,8 @@
         },
         "highAvailability": {
           "mode": "Disabled"
-        }
+        },
+        "network": "[if(empty(parameters('dbDelegatedSubnetId')), null(), createObject('delegatedSubnetResourceId', parameters('dbDelegatedSubnetId'), 'privateDnsZoneArmResourceId', parameters('dbPrivateDnsZoneId')))]"
       }
     },
     {
@@ -152,7 +175,8 @@
             "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('namePrefix'))), '2023-09-01').customerId]",
             "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('namePrefix'))), '2023-09-01').primarySharedKey]"
           }
-        }
+        },
+        "vnetConfiguration": "[if(empty(parameters('infrastructureSubnetId')), null(), createObject('infrastructureSubnetId', parameters('infrastructureSubnetId'), 'internal', false()))]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('namePrefix')))]"

@@ -116,6 +116,20 @@
     <pre><code>curl -sL https://netra.run/upgrade.sh | bash              # latest published version
 curl -sL https://netra.run/upgrade.sh | bash -s -- --image-tag 0.2.1</code></pre>
     <p>The app also checks the public version feed and shows an in-console banner when a newer version is available — the check runs in your browser, so the deployment makes no outbound call.</p>
+    <h3>Active Directory line-of-sight (optional)</h3>
+    <p>The Directory plane binds over LDAP from Netra's <i>own</i> network to a domain controller. A default install has no route to your DC subnet, so that plane reports "no DC reachable" until you give it line-of-sight. To enable it, run Netra <b>inside your VNet</b> and make sure that VNet can reach the DC:</p>
+    <ol>
+      <li>Create (or choose) a subnet for Netra's Container Apps environment — delegate it to <code>Microsoft.App/environments</code>, size <code>/23</code> or larger.</li>
+      <li>Give that VNet a route to the DC's network — <b>VNet peering</b> (for an IaaS/AD DS DC in Azure), or a <b>site-to-site VPN / ExpressRoute</b> for on-premises.</li>
+      <li>Allow <b>636/TCP (LDAPS)</b> from Netra's subnet to the domain controller (NSG / firewall). Prefer LDAPS so the bind credential is never in the clear.</li>
+      <li>Install with the subnet supplied — and, if you want the <b>database private too</b>, pass a delegated Postgres subnet and its private DNS zone (the DB then has no public endpoint):</li>
+    </ol>
+    <pre><code>curl -sL https://netra.run/install.sh | bash -s -- --region australiaeast \
+  --infrastructure-subnet /subscriptions/&lt;sub&gt;/resourceGroups/&lt;rg&gt;/providers/Microsoft.Network/virtualNetworks/&lt;vnet&gt;/subnets/&lt;aca-subnet&gt; \
+  --db-subnet   /subscriptions/&lt;sub&gt;/.../subnets/&lt;pg-subnet&gt; \
+  --db-dns-zone /subscriptions/&lt;sub&gt;/.../privateDnsZones/privatelink.postgres.database.azure.com</code></pre>
+    <p>Then, in the console's <b>Directory</b> tab, supply a <b>read-only</b> directory account and hit <b>Test &amp; discover</b> — Netra binds, confirms reachability, and discovers the naming context. It only ever reads.</p>
+    <div class="note">Supplying <code>--db-subnet</code> makes Postgres <b>VNet-private</b> — no public endpoint and no firewall rule, reachable only from your VNet. Recommended for PROTECTED workloads. Without it, the database is public but password-protected and TLS-only, reachable over the Azure backbone.</div>
 
     <h2 id="permissions"><span class="n">06</span>Permissions &amp; consent</h2>
     <p>When a plane needs a permission it isn't granted, Netra surfaces the ask in the console — with the reason, the controls it unlocks, and two ways to grant it:</p>
