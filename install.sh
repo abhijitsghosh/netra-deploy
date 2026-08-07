@@ -89,11 +89,23 @@ echo "==> [3/3] Finalise sign-in + grant Reader"
 # Never let a redirect-URI hiccup abort the more important Reader grant below.
 az ad app update --id "$APP_ID" --web-redirect-uris "$APP_URL/login/oauth2/code/entra" \
   || echo "    WARN: could not patch the redirect URI on app $APP_ID"
-if az role assignment create --assignee-object-id "$MI_OBJ" --assignee-principal-type ServicePrincipal \
-     --role Reader --scope "/subscriptions/$SUB" -o none 2>/dev/null; then
+# Retry with backoff: a just-created managed identity takes a minute or two to
+# replicate into Entra/RBAC, so the first attempt often hits a transient
+# "principal does not exist in the directory" — that is propagation, not a
+# permissions failure. Only after retries do we treat it as a real access gap.
+GRANTED=0
+for attempt in $(seq 1 8); do
+  if az role assignment create --assignee-object-id "$MI_OBJ" --assignee-principal-type ServicePrincipal \
+       --role Reader --scope "/subscriptions/$SUB" -o none 2>/dev/null; then
+    GRANTED=1; break
+  fi
+  [[ $attempt -lt 8 ]] && { echo "    …identity still propagating, retrying Reader grant ($attempt/8)"; sleep 15; }
+done
+if [[ "$GRANTED" == "1" ]]; then
   echo "    Reader granted on subscription $SUB"
 else
-  echo "    NOTE: could not grant Reader (needs Owner/User Access Administrator). An admin should run:"
+  echo "    NOTE: could not grant Reader — either the identity is still propagating, or you"
+  echo "    lack Owner / User Access Administrator on the subscription. Run this when ready:"
   echo "    az role assignment create --assignee-object-id $MI_OBJ --assignee-principal-type ServicePrincipal --role Reader --scope /subscriptions/$SUB"
 fi
 
