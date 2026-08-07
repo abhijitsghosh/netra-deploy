@@ -32,7 +32,12 @@ SUB=$(az account show --query id -o tsv)
 
 # [1/3] Entra app registration (confidential OIDC client), idempotent by name.
 echo "==> [1/3] Entra app registration"
-APP_ID=$(az ad app list --display-name Netra --query "[0].appId" -o tsv)
+APP_ID=$(az ad app list --display-name Netra --query "[0].appId" -o tsv 2>/dev/null || true)
+# A name lookup can return a stale/soft-deleted app (Entra deletes are recoverable
+# for 30 days and lag replication); only reuse an app that actually resolves.
+if [[ -n "$APP_ID" ]] && ! az ad app show --id "$APP_ID" >/dev/null 2>&1; then
+  APP_ID=""
+fi
 if [[ -z "$APP_ID" ]]; then
   APP_ID=$(az ad app create --display-name Netra --sign-in-audience AzureADMyOrg \
     --web-redirect-uris "https://localhost/login/oauth2/code/entra" --query appId -o tsv)
@@ -70,7 +75,9 @@ MI_OBJ=$(az identity show -g "$RG" -n "${STACK}-mi" --query principalId -o tsv)
 
 # [3/3] Patch the real redirect URI and grant Reader on the subscription.
 echo "==> [3/3] Finalise sign-in + grant Reader"
-az ad app update --id "$APP_ID" --web-redirect-uris "$APP_URL/login/oauth2/code/entra"
+# Never let a redirect-URI hiccup abort the more important Reader grant below.
+az ad app update --id "$APP_ID" --web-redirect-uris "$APP_URL/login/oauth2/code/entra" \
+  || echo "    WARN: could not patch the redirect URI on app $APP_ID"
 if az role assignment create --assignee-object-id "$MI_OBJ" --assignee-principal-type ServicePrincipal \
      --role Reader --scope "/subscriptions/$SUB" -o none 2>/dev/null; then
   echo "    Reader granted on subscription $SUB"

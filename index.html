@@ -148,7 +148,7 @@
     <div class="brand">&gt;_ <span class="eye">NETRA</span></div>
     <nav>
       <a href="#value">Why</a><a href="#what">What</a><a href="#how">How</a>
-      <a href="docs.html">Docs</a><a href="#install">Install</a>
+      <a href="docs.html">Docs</a><a href="#requirements">Install</a>
     </nav>
   </header>
 
@@ -228,6 +228,21 @@
     </div>
   </section>
 
+  <section id="requirements">
+    <h2>What you need to install</h2>
+    <p class="lead">One command in Azure Cloud Shell (Bash), in the subscription you want assessed — no local tooling:</p>
+    <div class="cli">
+      <span class="lbl">AZURE CLOUD SHELL</span>
+      <code class="mono">curl -sL https://netra.run/install.sh | bash -s -- --region australiaeast</code>
+    </div>
+    <div class="cards" style="margin-top:20px">
+      <div class="card"><h3>Azure role</h3><p><b>Owner</b> on the target subscription — or <b>Contributor</b> plus <b>Role Based Access Control Administrator</b>. The installer creates the resources and grants Netra's identity read-only <span class="mono">Reader</span>.</p></div>
+      <div class="card"><h3>Entra (Azure AD)</h3><p>Permission to <b>register an application</b> — Application Developer, or a tenant that allows app registration — for the Entra sign-in app.</p></div>
+      <div class="card"><h3>Identity plane <span style="opacity:.6">(optional)</span></h3><p>To assess MFA &amp; Conditional Access, a <b>Global Administrator</b> or <b>Privileged Role Administrator</b> runs one read-only <span class="mono">Policy.Read.All</span> grant — the exact command is shown in the app.</p></div>
+      <div class="card"><h3>What Netra ends up holding</h3><p>Only <span class="mono">Reader</span> — and, if you consent, read-only <span class="mono">Policy.Read.All</span>. No write path, no standing secret. Teardown is one command.</p></div>
+    </div>
+  </section>
+
   <section id="frameworks">
     <h2>Mapped to what you're assessed against</h2>
     <p class="lead">One scan, every framework a finding touches — pinned to real benchmark versions.</p>
@@ -249,7 +264,8 @@
   </section>
 
   <div class="disc">
-    <b>Disclaimer.</b> Netra is an independent assessment aid. It is not endorsed by, affiliated with, or accredited by the Australian Signals Directorate, the ACSC, or the Australian Government. It reports observed posture against the ISM and public benchmarks; it does not grant accreditation or IRAP assessment. "ISM", "Essential Eight", "ACSC" and "IRAP" are used nominatively to describe the frameworks assessed. Framework control identifiers are curated references pinned to the versions shown and should be verified against the source benchmark.
+    <b>No warranty; no liability.</b> Netra is provided "as is", without warranty of any kind, express or implied. To the maximum extent permitted by law, the authors and copyright holder accept no liability for any claim, loss or damage arising from its use. It is an assessment aid, not a guarantee of security or compliance; you remain responsible for your own compliance decisions and their verification.<br><br>
+    <b>Independence.</b> Netra is an independent assessment aid. It is not endorsed by, affiliated with, or accredited by the Australian Signals Directorate, the ACSC, or the Australian Government. It reports observed posture against the ISM and public benchmarks; it does not grant accreditation or IRAP assessment. "ISM", "Essential Eight", "ACSC" and "IRAP" are used nominatively to describe the frameworks assessed. Framework control identifiers are curated references pinned to the versions shown and should be verified against the source benchmark.
   </div>
 
   <footer>

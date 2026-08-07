@@ -111,6 +111,11 @@
     <p>From Azure Cloud Shell (Bash), in the target subscription:</p>
     <pre><code>curl -sL https://netra.run/install.sh | bash -s -- --region australiaeast</code></pre>
     <p>This creates a resource group <code>rg-netra</code> with a user-assigned managed identity, Log Analytics, and a single-replica Container App; registers an Entra app for sign-in; provisions a managed <b>Postgres</b> for your attestations and decisions; and grants the identity <b>Reader</b> on the subscription. Infrastructure, email and hardening checks work immediately.</p>
+    <h3>Upgrading in place</h3>
+    <p>Upgrades are a single command — an <b>image-only roll</b>. The database is untouched, and the app applies its Flyway schema migrations on startup, so code <i>and</i> schema move forward with <b>zero data loss</b>. It never re-runs the install stack (which would stand up a fresh, empty database).</p>
+    <pre><code>curl -sL https://netra.run/upgrade.sh | bash              # latest published version
+curl -sL https://netra.run/upgrade.sh | bash -s -- --image-tag 0.2.1</code></pre>
+    <p>The app also checks the public version feed and shows an in-console banner when a newer version is available — the check runs in your browser, so the deployment makes no outbound call.</p>
 
     <h2 id="permissions"><span class="n">06</span>Permissions &amp; consent</h2>
     <p>When a plane needs a permission it isn't granted, Netra surfaces the ask in the console — with the reason, the controls it unlocks, and two ways to grant it:</p>
