@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Netra — Documentation</title>
 <meta name="description" content="How Netra works: five read-only evidence planes, the permission-consent model, framework mappings, install and teardown, and its security posture.">
+<link rel="canonical" href="https://netra.run/docs.html">
+<meta name="theme-color" content="#05080a">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Netra">
+<meta property="og:title" content="Netra — Documentation">
+<meta property="og:description" content="Five read-only evidence planes, controls & decisions, install and teardown, framework mappings, and Netra's security posture.">
+<meta property="og:url" content="https://netra.run/docs.html">
+<meta property="og:image" content="https://netra.run/img/decision.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://netra.run/img/decision.png">
 <style>
   :root{--bg:#05080a;--panel:#0b1216;--line:#15242a;--fg:#c9d5d2;--dim:#6d7f7c;
         --acc:#00e5a0;--cyan:#22d3ee;--amber:#ffb454}
@@ -54,6 +65,7 @@
     <a href="#what">What it is</a>
     <a href="#planes">Evidence planes</a>
     <a href="#verdicts">Verdicts &amp; honesty</a>
+    <a href="#controls">Controls &amp; decisions</a>
     <div class="grp">Operate</div>
     <a href="#install">Install</a>
     <a href="#permissions">Permissions &amp; consent</a>
@@ -70,8 +82,8 @@
 
     <h2 id="what"><span class="n">01</span>What it is</h2>
     <p>Netra deploys into your own Azure tenant and reads it — with nothing but the Reader role and, once you consent, a read-only Microsoft Graph permission. It reports where you stand against the Australian Government ISM at PROTECTED, and recommends best-practice hardening mapped to CIS, NIST 800-53, the Microsoft Cloud Security Benchmark and the ACSC Blueprint. It writes nothing to your tenant.</p>
-    <img class="shot" src="img/recommendations.png" alt="Netra hardening recommendations">
-    <p class="cap">Live best-practice recommendations from a real tenant — each mapped to the frameworks it satisfies.</p>
+    <img class="shot" src="img/overview.png" alt="Netra console — scan summary with compliance donut">
+    <p class="cap">The console: a read-only scan of all 986 PROTECTED controls, a compliance donut, and a branded PDF report.</p>
 
     <h2 id="planes"><span class="n">02</span>Five evidence planes</h2>
     <table>
@@ -89,12 +101,18 @@
     <p>Absence is never a pass. A control with no evidence is <b>Not assessed</b>; a check whose prerequisite is missing is <b>No visibility</b>; neither is Effective. Every technical mapping is <b>partial</b> — it proves a necessary condition, not the whole control — and states its limitations. Manual attestation covers the residual but can <b>never</b> override a determined machine finding: a person cannot sign away a real result.</p>
     <div class="note">Coverage is deliberately honest: roughly a fifth of PROTECTED controls are technically checkable at all; the rest are governance, personnel and process, answered by attestation. Netra never inflates its own coverage.</div>
 
-    <h2 id="install"><span class="n">04</span>Install</h2>
+    <h2 id="controls"><span class="n">04</span>Controls, attestation &amp; decisions</h2>
+    <p>Every ISM control, correlated with the scan. Where the scan <b>proved</b> a control you see it; where it saw <b>nothing</b> you attest it (verdict, justification, attestor); and where it found a <b>negative</b> you decide what to do — remediate, accept the risk, record a compensating control, or dispute it. A compensating control or a disputed false positive reports <b>Effective</b> (the machine result kept alongside); risk-acceptance and remediation keep the finding and record the treatment. A guided walkthrough steps through everything that needs action.</p>
+    <img class="shot" src="img/decision.png" alt="Netra Controls — deciding what to do about a machine-negative control">
+    <p class="cap">A machine-negative control, and the operator deciding its treatment — tracked with owner, date and justification.</p>
+    <p>The one artefact your assessor needs is the <b>merged PDF report</b>: it fuses the machine scan with your attestations and decisions, so a compensating control or accepted risk shows against its control. Attestations and decisions are stored in the deployment's own managed Postgres, so they survive restarts and one-command upgrades.</p>
+
+    <h2 id="install"><span class="n">05</span>Install</h2>
     <p>From Azure Cloud Shell (Bash), in the target subscription:</p>
     <pre><code>curl -sL https://netra.run/install.sh | bash -s -- --region australiaeast</code></pre>
-    <p>This creates a resource group <code>rg-netra</code> with a user-assigned managed identity, Log Analytics, and a single-replica Container App; registers an Entra app for sign-in; and grants the identity <b>Reader</b> on the subscription. Infrastructure, email and hardening checks work immediately.</p>
+    <p>This creates a resource group <code>rg-netra</code> with a user-assigned managed identity, Log Analytics, and a single-replica Container App; registers an Entra app for sign-in; provisions a managed <b>Postgres</b> for your attestations and decisions; and grants the identity <b>Reader</b> on the subscription. Infrastructure, email and hardening checks work immediately.</p>
 
-    <h2 id="permissions"><span class="n">05</span>Permissions &amp; consent</h2>
+    <h2 id="permissions"><span class="n">06</span>Permissions &amp; consent</h2>
     <p>When a plane needs a permission it isn't granted, Netra surfaces the ask in the console — with the reason, the controls it unlocks, and two ways to grant it:</p>
     <h3>One-click portal consent</h3>
     <p>A deep link straight to the admin-consent flow for Netra's app.</p>
@@ -106,20 +124,20 @@ az rest --method POST \
   --uri "https://graph.microsoft.com/v1.0/servicePrincipals/$graphSpId/appRoleAssignedTo" \
   --body "{\"principalId\":\"&lt;NETRA_MI_OBJECT_ID&gt;\",\"resourceId\":\"$graphSpId\",\"appRoleId\":\"$roleId\"}"</code></pre>
     <p>The console pre-fills your managed identity's object id. Every permission Netra asks for is read-only.</p>
-    <img class="shot" src="img/permissions.png" alt="Netra permission consent panel">
-    <p class="cap">The ask in the console: a one-click portal consent link and a copy-paste az CLI grant, each explaining why.</p>
+    <img class="shot" src="img/findings.png" alt="Netra findings with gain-visibility help">
+    <p class="cap">A no-visibility finding shows the exact read-only grant that lets Netra assess it definitively — or attest it instead.</p>
 
-    <h2 id="identity"><span class="n">06</span>Managed identity</h2>
+    <h2 id="identity"><span class="n">07</span>Managed identity</h2>
     <p>Netra reads your tenant as a user-assigned managed identity named <code>netra-mi</code>. The console shows it prominently — its object id, client id, and that it holds <b>Reader</b> and nothing else. There is no service account password and no baked secret; Azure access is via the managed identity, and the only secret is the Entra sign-in client secret, injected as a Container App secret.</p>
-    <img class="shot" src="img/identity.png" alt="Netra managed identity banner">
-    <p class="cap">The identity banner names the exact managed identity reading your tenant, and that it holds Reader — read-only.</p>
+    <img class="shot" src="img/access.png" alt="Netra Access tab — the managed identity and what it holds">
+    <p class="cap">The Access tab names the exact managed identity reading your tenant, what it holds today, and how to widen it.</p>
 
-    <h2 id="teardown"><span class="n">07</span>Teardown</h2>
+    <h2 id="teardown"><span class="n">08</span>Teardown</h2>
     <pre><code>az stack group delete --name netra -g rg-netra --action-on-unmanage deleteAll --yes
 az group delete -n rg-netra --yes
 # then remove the Reader role assignment and the Entra app (ids printed by the installer)</code></pre>
 
-    <h2 id="frameworks"><span class="n">08</span>Frameworks</h2>
+    <h2 id="frameworks"><span class="n">09</span>Frameworks</h2>
     <p>One scan, mapped to every framework a finding touches — pinned to versions:</p>
     <table>
       <thead><tr><th>Framework</th><th>Version</th></tr></thead>
@@ -134,8 +152,8 @@ az group delete -n rg-netra --yes
     </table>
     <div class="note">Framework control identifiers are curated references, not verbatim benchmark text, and should be verified against the pinned source version.</div>
 
-    <h2 id="security"><span class="n">09</span>Security posture</h2>
-    <p>Read-only by construction (Reader; Resource Graph has no mutation API). No baked secrets — managed identity for Azure. Entra OIDC sign-in, fail-closed. The higher-privilege guest and directory planes are opt-in and off by default. The install templates are public and the full source is available to security teams on request — <a href="mailto:security@netra.run">security@netra.run</a>.</p>
+    <h2 id="security"><span class="n">10</span>Security posture</h2>
+    <p>Read-only by construction (Reader; Resource Graph has no mutation API). No baked secrets — managed identity for Azure. Entra OIDC sign-in, fail-closed. The higher-privilege guest and directory planes are opt-in and off by default. Attestations, decisions and branding persist in the deployment&rsquo;s own managed Postgres, so upgrades preserve them. The install templates are public and the full source is available to security teams on request — <a href="mailto:security@netra.run">security@netra.run</a>.</p>
   </main>
 </div>
 </body>
