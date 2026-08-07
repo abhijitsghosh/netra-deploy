@@ -48,9 +48,20 @@ if [[ -z "$TEMPLATE" ]]; then
   TEMPLATE="$(mktemp).json"
   curl -sL "$BASE/azuredeploy.json" -o "$TEMPLATE"
 fi
+# Generate a strong Postgres admin password (only used inside this deployment; stored as a
+# Container App secret and passed to the managed database). Reuse an existing one on re-run so an
+# upgrade keeps the same database — attestations and decisions are preserved across upgrades.
+DB_PASSWORD="${NETRA_DB_PASSWORD:-}"
+if [[ -z "$DB_PASSWORD" ]]; then
+  DB_PASSWORD=$(az containerapp secret show -g "$RG" -n "${STACK}-app" --secret-name db-password \
+    --query value -o tsv 2>/dev/null || true)
+fi
+[[ -z "$DB_PASSWORD" ]] && DB_PASSWORD="Nt$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 22)9!"
+
 az stack group create --name "$STACK" --resource-group "$RG" \
   --template-file "$TEMPLATE" \
   --parameters entraTenantId="$TENANT" entraClientId="$APP_ID" entraClientSecret="$SECRET" image="$IMAGE" \
+    dbAdminPassword="$DB_PASSWORD" \
   --action-on-unmanage deleteAll --deny-settings-mode none --yes -o none
 
 APP_URL=$(az deployment group show -g "$RG" -n "$STACK" --query "properties.outputs.appUrl.value" -o tsv 2>/dev/null || \
