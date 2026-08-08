@@ -32,6 +32,22 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# A VNet-injected database is only reachable from inside that VNet. If the app is not
+# also in the VNet it cannot reach its own database and the deployment comes up dead
+# (the container fails to start on a JDBC connect timeout), so refuse the combination
+# up front rather than hand back a broken stack.
+if [[ -n "$DB_SUBNET" && -z "$INFRA_SUBNET" ]]; then
+  echo "ERROR: --db-subnet makes Postgres private to the VNet, so Netra must run inside that VNet too." >&2
+  echo "       Re-run with --infrastructure-subnet <aca-subnet-id> (delegated to Microsoft.App/environments)," >&2
+  echo "       or drop --db-subnet to keep the database on its password + TLS protected public endpoint." >&2
+  exit 1
+fi
+if [[ -n "$DB_SUBNET" && -z "$DB_DNS_ZONE" ]]; then
+  echo "ERROR: --db-subnet also needs --db-dns-zone (the privatelink.postgres.database.azure.com zone id)," >&2
+  echo "       otherwise the server name will not resolve from inside the VNet." >&2
+  exit 1
+fi
+
 echo "==> Netra install into region '$REGION', resource group '$RG'"
 TENANT=$(az account show --query tenantId -o tsv)
 SUB=$(az account show --query id -o tsv)

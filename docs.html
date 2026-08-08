@@ -136,7 +136,7 @@ curl -sL https://netra.run/upgrade.sh | bash -s -- --image-tag 0.3.1</code></pre
   --db-subnet   /subscriptions/&lt;sub&gt;/.../subnets/&lt;pg-subnet&gt; \
   --db-dns-zone /subscriptions/&lt;sub&gt;/.../privateDnsZones/privatelink.postgres.database.azure.com</code></pre>
     <p>Then, in the console's <b>Directory</b> tab, supply a <b>read-only</b> directory account and hit <b>Test &amp; discover</b> — Netra binds, confirms reachability, and discovers the naming context. It only ever reads.</p>
-    <div class="note">Supplying <code>--db-subnet</code> makes Postgres <b>VNet-private</b> — no public endpoint and no firewall rule, reachable only from your VNet. Recommended for PROTECTED workloads. Without it, the database is public but password-protected and TLS-only, reachable over the Azure backbone.</div>
+    <div class="note"><b>The three flags go together.</b> <code>--db-subnet</code> makes Postgres <b>VNet-private</b> — no public endpoint at all — so Netra itself must also run inside that VNet (<code>--infrastructure-subnet</code>), and the private DNS zone (<code>--db-dns-zone</code>) is required for the server name to resolve from inside it. Supplying <code>--db-subnet</code> on its own would leave the app unable to reach its own database, so the installer refuses that combination up front. Recommended for PROTECTED workloads. Without these flags the database keeps its Azure-services-only endpoint, protected by the admin password and enforced TLS.</div>
 
     <h2 id="permissions"><span class="n">06</span>Permissions &amp; consent</h2>
     <p>When a plane needs a permission it isn't granted, Netra surfaces the ask in the console — with the reason, the controls it unlocks, and two ways to grant it:</p>
