@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Netra">
+  <rect width="64" height="64" rx="13" fill="#05080a"/>
+  <rect x="2" y="2" width="60" height="60" rx="11" fill="none" stroke="#0f2a22" stroke-width="1.5"/>
+  <text x="9" y="45" font-family="'SF Mono',Menlo,Consolas,monospace" font-size="33" font-weight="700" fill="#00e5a0">&gt;_</text>
+</svg>
