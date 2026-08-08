@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.43.8.12551",
-      "templateHash": "13843521147433137833"
+      "templateHash": "14017952727168473697"
     }
   },
   "parameters": {
@@ -110,12 +110,13 @@
       "condition": "[empty(parameters('dbDelegatedSubnetId'))]",
       "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
       "apiVersion": "2024-08-01",
-      "name": "[format('{0}/{1}', format('{0}-db', parameters('namePrefix')), 'AllowAzureServices')]",
+      "name": "[format('{0}/{1}', format('{0}-db', parameters('namePrefix')), 'NetraAppOnly')]",
       "properties": {
-        "startIpAddress": "0.0.0.0",
-        "endIpAddress": "0.0.0.0"
+        "startIpAddress": "[reference(resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('namePrefix'))), '2024-03-01').staticIp]",
+        "endIpAddress": "[reference(resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('namePrefix'))), '2024-03-01').staticIp]"
       },
       "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('namePrefix')))]",
         "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', format('{0}-db', parameters('namePrefix')))]"
       ]
     },
