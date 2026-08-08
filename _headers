@@ -1,0 +1,14 @@
+# Cloudflare Pages headers for netra.run
+
+# Serve the installer/upgrade scripts as plain text so `curl | bash` and browser
+# viewing both get clean bytes (not a download or octet-stream).
+/install.sh
+  Content-Type: text/plain; charset=utf-8
+/upgrade.sh
+  Content-Type: text/plain; charset=utf-8
+
+# The version feed drives the in-app update check and upgrade.sh — never cache it,
+# so a new release is picked up immediately.
+/version.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: no-store
