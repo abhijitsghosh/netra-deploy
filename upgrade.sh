@@ -26,13 +26,20 @@ VERSION_URLS=(
 )
 TAG=""
 
+# Ask EVERY feed and take the highest version. The feeds mirror the same release, so if
+# one is a stale snapshot (a manually-uploaded site that wasn't refreshed) the other still
+# reports the truth — first-wins would let a stale mirror pin you to an old version.
 latest_version() {
-  local url body ver
+  local url body ver best=""
   for url in "${VERSION_URLS[@]}"; do
     body="$(curl -fsSL "$url" 2>/dev/null)" || continue
     ver="$(printf '%s' "$body" | (jq -r '.latest' 2>/dev/null || sed -n 's/.*"latest"[^"]*"\([^"]*\)".*/\1/p'))"
-    [[ -n "$ver" && "$ver" != "null" ]] && { printf '%s' "$ver"; return 0; }
+    [[ -z "$ver" || "$ver" == "null" ]] && continue
+    if [[ -z "$best" ]] || [[ "$(printf '%s\n%s\n' "$ver" "$best" | sort -V | tail -n1)" == "$ver" ]]; then
+      best="$ver"
+    fi
   done
+  [[ -n "$best" ]] && { printf '%s' "$best"; return 0; }
   return 1
 }
 
