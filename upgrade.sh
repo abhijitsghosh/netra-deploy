@@ -3,7 +3,7 @@
 # Netra in-place upgrade — safe, image-only roll.
 #
 #   curl -sL https://netra.run/upgrade.sh | bash
-#   curl -sL https://netra.run/upgrade.sh | bash -s -- --image-tag 0.2.1
+#   curl -sL https://netra.run/upgrade.sh | bash -s -- --image-tag 0.3.1
 #
 # Rolls ONLY the Container App image to the target version. The managed Postgres
 # is untouched, and the app runs its Flyway migrations on boot — so code AND
@@ -38,7 +38,7 @@ latest_version() {
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -t|--image-tag)      TAG="${2:-}"; shift 2;;
+    -t|--image-tag)      TAG="${2:-}"; EXPLICIT_TAG=1; shift 2;;
     -g|--resource-group) RG="${2:-}"; shift 2;;
     -n|--app)            APP="${2:-}"; shift 2;;
     -h|--help) echo "Usage: upgrade.sh [--image-tag <ver>] [--resource-group rg-netra] [--app netra-app]"; exit 0;;
@@ -56,6 +56,22 @@ fi
 
 CURRENT="$(az containerapp show -g "$RG" -n "$APP" --query "properties.template.containers[0].image" -o tsv 2>/dev/null || true)"
 [[ -z "$CURRENT" ]] && { echo "ERROR: Netra app '$APP' not found in resource group '$RG'. Is it installed?"; exit 1; }
+
+# Never silently roll BACKWARDS. A stale or cached version feed must not downgrade a
+# running deployment — schema migrations only go forward, so an older image against a
+# newer database is the one genuinely unsafe move here. An explicit --image-tag still
+# wins (that is a deliberate rollback), but a feed-derived older version is refused.
+CURRENT_TAG="${CURRENT##*:}"
+newer_or_equal() {   # newer_or_equal A B -> true if A >= B (semver-ish, numeric fields)
+  [[ "$1" == "$2" ]] && return 0
+  [[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n1)" == "$1" ]]
+}
+if [[ -z "${EXPLICIT_TAG:-}" ]] && [[ "$CURRENT_TAG" != "latest" ]] \
+   && ! newer_or_equal "$TAG" "$CURRENT_TAG"; then
+  echo "✋ The version feed offers $TAG but you are already on $CURRENT_TAG — refusing to downgrade."
+  echo "   The feed may be stale or cached. Re-run with --image-tag $TAG if you really intend to roll back."
+  exit 1
+fi
 
 echo "▶ Current:      $CURRENT"
 echo "▶ Upgrading to: $IMAGE_REPO:$TAG  (image-only — your attestations, decisions and branding are preserved; Flyway migrates the schema on boot)…"
