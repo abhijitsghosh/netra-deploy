@@ -26,7 +26,7 @@
 <meta name="twitter:description" content="Get your Azure tenancy ISM PROTECTED compliant and pragmatically hardened — read-only, in your own tenant.">
 <meta name="twitter:image" content="https://netra.run/img/overview.png">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Netra","applicationCategory":"SecurityApplication","operatingSystem":"Microsoft Azure","description":"Read-only Azure ISM PROTECTED posture reporter and best-practice hardening scanner. Assess against the Australian Government ISM, attest and decide on controls, and export a merged evidence report.","offers":{"@type":"Offer","url":"https://buy.stripe.com/bJe9ASa5Dco88uMczz7kc02","priceCurrency":"AUD"},"url":"https://netra.run/","publisher":{"@type":"Organization","name":"Netra"}}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Netra","applicationCategory":"SecurityApplication","operatingSystem":"Microsoft Azure","description":"Read-only Azure ISM PROTECTED posture reporter and best-practice hardening scanner. Assess against the Australian Government ISM, attest and decide on controls, and export a merged evidence report.","offers":{"@type":"Offer","url":"https://buy.stripe.com/bJe9ASa5Dco88uMczz7kc02","price":"100","priceCurrency":"AUD","priceSpecification":{"@type":"UnitPriceSpecification","price":"100","priceCurrency":"AUD","unitText":"per install","billingIncrement":1,"billingDuration":1,"unitCode":"MON"},"availability":"https://schema.org/InStock"},"url":"https://netra.run/","publisher":{"@type":"Organization","name":"Netra"}}
 </script>
 <style>
   :root{
@@ -70,6 +70,17 @@
   .btn{display:inline-block;border:1px solid var(--acc);color:var(--acc);border-radius:6px;padding:9px 16px;font-size:13px;letter-spacing:.5px;margin-right:10px}
   .btn.solid{background:var(--acc);color:#04120d;font-weight:600}
 
+  .price{border:1px solid var(--acc);border-radius:12px;background:linear-gradient(180deg,#0a1310,#060a0b);padding:26px}
+  .price-head{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px}
+  .price .amount{font-size:40px;font-weight:700;line-height:1;color:var(--acc)}
+  .price .amount .per{font-size:15px;font-weight:400;color:var(--dim)}
+  .price .unit{color:var(--dim);font-size:13.5px;margin-top:6px}
+  .price-head .btn{margin:0}
+  .price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;font-size:13.5px;color:#b7c4c1}
+  .price-grid b{color:var(--acc)}
+  .price-note{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px}
+  .price-note b{color:var(--fg)}
   .value{border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#0a1310,#060a0b);padding:26px;margin:6px 0 8px}
   .value .head{font-size:22px;line-height:1.35;margin:0 0 18px;max-width:70ch}
   .value .head b{color:var(--acc)}
@@ -158,7 +169,7 @@
     <div class="brand">&gt;_ <span class="eye">NETRA</span></div>
     <nav>
       <a href="#value">Why</a><a href="#what">What</a><a href="#how">How</a>
-      <a href="#about">About</a><a href="docs.html">Docs</a><a href="#requirements">Install</a>
+      <a href="#pricing">Pricing</a><a href="#about">About</a><a href="docs.html">Docs</a><a href="#requirements">Install</a>
     </nav>
   </header>
 
@@ -267,6 +278,28 @@
       <span class="chip">NIST <span class="v">SP 800-53 Rev. 5</span></span>
       <span class="chip">MCSB <span class="v">v1</span></span>
       <span class="chip">ACSC <span class="v">Blueprint for Secure Cloud</span></span>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <h2>Pricing</h2>
+    <div class="price">
+      <div class="price-head">
+        <div>
+          <div class="amount">$100 <span class="per">AUD / month</span></div>
+          <div class="unit">per install — one Netra deployment in your tenant</div>
+        </div>
+        <a class="btn solid" href="https://buy.stripe.com/bJe9ASa5Dco88uMczz7kc02">Subscribe</a>
+      </div>
+      <div class="price-grid">
+        <div><b>Everything included.</b> No feature gates, no per-seat charge, no control limits. Every install gets the full 986-control ISM PROTECTED assessment, all five evidence planes, the attestation and decision workspace, and the PDF, SSP and Annex artefacts.</div>
+        <div><b>Unlimited subscriptions and users.</b> One install scans every Azure subscription its identity can read, and everyone in your tenant who can sign in can use it.</div>
+        <div><b>Updates included.</b> ASD revises the ISM; released updates carry the new catalog, and upgrading is one command that keeps your attestations and decisions.</div>
+        <div><b>Cancel any time.</b> Monthly, no lock-in. Uninstall is one command and leaves nothing behind.</div>
+      </div>
+      <div class="price-note">
+        <b>Plus your own Azure costs.</b> Netra runs in <i>your</i> tenant, so you pay Microsoft directly for the infrastructure it uses — a single Container App, Log Analytics, and a Burstable Postgres, typically <b>~$55–65 AUD/month</b> at current list prices. Nothing is billed through us, and you can tear it down whenever you like. Costs vary by region and usage; check the Azure pricing calculator for your own estimate.
+      </div>
     </div>
   </section>
 
